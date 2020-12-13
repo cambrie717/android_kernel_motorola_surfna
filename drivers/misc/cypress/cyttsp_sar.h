@@ -16,12 +16,9 @@
 #define _CYTTSP_SAR_H_
 
 #include <linux/types.h>
-#include <linux/mutex.h>
-#include <linux/wakelock.h>
 
 #define CYTTSP_SAR_CHANNEL_ENABLE		0x06
 #define CYTTSP_SAR_FORCE_CALIBRATE		0x07
-#define CYTTSP_SAR_REFRESH_BASELINE		0x08
 #define CYTTSP_SAR_CHANNEL_MAX			0x08
 #define CYTTSP_SAR_STATE_ERROR			0x03
 
@@ -85,6 +82,10 @@ static struct cyttsp_reg_data cyttsp_i2c_reg_setup[] = {
 		.reg = CYTTSP_SAR_CHANNEL_ENABLE,
 		.val = 0x0f,
 	},
+	{
+		.reg = CYTTSP_SAR_FORCE_CALIBRATE,
+		.val = 0x3e,
+	},
 };
 
 typedef struct cyttsp_sar_data *pcyttsp_data_t;
@@ -95,14 +96,9 @@ struct cyttsp_sar_data {
 	struct regulator *regulator_avdd;
 	struct regulator *regulator_vddio;
 	struct input_dev *input_dev[4];
-	struct delayed_work  eint_work;
-	struct wake_lock cap_lock;
 	bool dbgdump;
 	unsigned long sensorStatus;
 	bool enable;
-	struct work_struct ps_notify_work;
-	struct notifier_block ps_notif;
-	bool ps_is_present;
 	u8 bootloader_addr;
 	u8 app_addr;
 };
@@ -114,7 +110,6 @@ struct cyttsp_sar_platform_data {
 	unsigned long irqflags;
 	const char *input_name;
 	int i2c_reg_num;
-	struct mutex i2c_mutex;
 	struct cyttsp_reg_data *pi2c_reg;
 	int nsars;
 	int *key_code;
